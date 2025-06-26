@@ -33,7 +33,7 @@ export default class FxControl {
 			if (object['__##function']) {
 				proxies[id] = (...args) => this._call(
 					object['__##function'],
-					args
+					...args
 				);
 			}
 			else {
@@ -46,7 +46,7 @@ export default class FxControl {
 							if (value['__##function']) {
 								const fn = (...args) => this._call(
 									value['__##function'],
-									args
+									...args
 								);
 								return new Proxy(fn, {
 									get(target, prop) {
@@ -74,12 +74,17 @@ export default class FxControl {
 		if (error)
 			return resolver.reject(new Error(error));
 
-		if (!resultId)
+		if (resultId === null)
 			return resolver.resolve(undefined);
 
+		if (resultId === undefined) {
+			resolver.reject(new Error(`No resultId provided`));
+			return console.error(`No resultId provided in data:`, data);
+		}
+
 		if (proxies[resultId] === undefined) {
-			resolver.reject(new Error(`No object found`));
-			return console.error(`No object found for resultId: ${resultId}`);
+			resolver.reject(new Error(`Object not found`));
+			return console.error(`No object found for resultId: ${resultId} in data:`, data);
 		}
 
 		resolver.resolve(proxies[resultId]);

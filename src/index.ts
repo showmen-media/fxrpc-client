@@ -17,8 +17,9 @@ export default class FxRpc {
 	private _eventsStream: FxEvents;
 	private _controlStream: FxControl;
 
-	constructor(address, credentials) {
+	constructor(address, credentials, debug = false) {
 		this.service = new proto.RpcService(address, credentials);
+		this.service.debug = debug;
 	}
 
 	private _getControlStream() {
@@ -35,6 +36,15 @@ export default class FxRpc {
 			);
 		}
 		return this._getControlStream().get(...path);
+	}
+
+	public async call(path: string[], ...args: any[]) {
+		if (path.length === 0) return null;
+		const fn = await this.get(...path);
+		if (typeof fn !== 'function') {
+			throw new Error(`The path '${path.join('.')}' does not point to a function.`);
+		}
+		return fn(...args);
 	}
 
 	public emit(event: string, ...args: any[]) {
