@@ -3,9 +3,11 @@ const protoLoader = require("@grpc/proto-loader");
 
 import FxEvents from './events';
 import FxControl from './control';
+import protobuf from "protobufjs";
 
-const PROTO_PATH = require.resolve('fxrpc-client/fxsrv.proto');
-const packageDef = protoLoader.loadSync(PROTO_PATH);
+const protoText = require("../fxsrv.proto");
+const root = protobuf.parse(protoText, { keepCase: true }).root;
+const packageDef = protoLoader.fromJSON(root.toJSON());
 const proto = grpc.loadPackageDefinition(packageDef).rpcservice;
 
 
